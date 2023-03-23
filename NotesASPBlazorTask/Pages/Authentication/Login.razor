@@ -1,0 +1,103 @@
+﻿@page "/login"
+
+@using Data.Models;
+@using System.Web;
+
+@inject NotesASPBlazorTask.Data.Services.Authentication.IUserService _userManager
+@inject AuthenticationStateProvider _stateProvider
+@inject NavigationManager _navManager
+@inject IJSRuntime _js
+
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <div class="row">
+        <div class="col alert alert-@textClass text-center">
+            @message
+        </div>
+    </div>
+}
+<div class="row">
+    <div class="col-12">
+        <h2 class="text-uppercase text-center text-info">Use a local account to log in.</h2>
+    </div>
+</div>
+<div class="row border rounded p-4">
+    <div class="col">
+        <section>
+            <EditForm Model="@input" OnValidSubmit="@ValidateUser">
+                <DataAnnotationsValidator />
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input @bind="input.Email" class="form-control" />
+                    <ValidationMessage For="(() => input.Email)" class="text-danger" />
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input @bind="input.Password" type="password" class="form-control" />
+                    <ValidationMessage For="(() => input.Password)" class="text-danger" />
+                </div>
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label>Remember Me</label>
+                        <input type="checkbox" @bind="@input.RememberMe" class="checkbox" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    @if (isProcessing)
+                    {
+                        <button class="btn btn-primary" disabled>Wait ...</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary">Log in</button>
+                    }
+                </div>
+            </EditForm>
+        </section>
+    </div>
+</div>
+
+@code {
+    LoginInput input = new LoginInput();
+    string message = string.Empty;
+    string textClass = "success";
+    bool isProcessing = false;
+
+    async Task ValidateUser()
+    {
+        isProcessing = true;
+        var loginResult = await _userManager.SignIn(input);
+
+        if (loginResult is not null)
+        {
+            message = "Login success!";
+
+            var customeStateProvider = (CustomeAuthStateProvider)_stateProvider;
+            
+            await customeStateProvider.UpdateAuthState(new UserSession
+            {
+                Id = loginResult.Id,
+                UserName = loginResult.UserName,
+                FirstName = loginResult.FirstName,
+                LastName = loginResult.LastName
+            });
+        }
+        else
+        {
+            message = "Login failed!";
+            textClass = "danger";
+            return;
+        }
+
+        // Get the return URL from query string param
+        var absoluteUri = new Uri(_navManager.Uri);
+        var queryParams = HttpUtility.ParseQueryString(absoluteUri.Query);
+        var returnUrl = queryParams["returnUrl"];
+
+        if (!string.IsNullOrWhiteSpace(returnUrl))
+            _navManager.NavigateTo($"/{returnUrl}", true);
+        else
+            _navManager.NavigateTo("/", true);
+    }
+}

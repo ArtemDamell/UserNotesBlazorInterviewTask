@@ -6,16 +6,20 @@ namespace NotesASPBlazorTask.Data.Services
 {
     public class NoteService : INoteService
     {
-        private readonly ISqlDbContext _sqlDbContext;
+        //private readonly ISqlDbContext _sqlDbContext;
 
-        public NoteService(ISqlDbContext sqlDbContext)
-        {
-            _sqlDbContext = sqlDbContext;
-        }
+        //public NoteService(ISqlDbContext sqlDbContext)
+        //{
+        //    _sqlDbContext = sqlDbContext;
+        //}
 
-        public async Task<Message> AddNote(Note newNote)
+        //public async Task<Message> AddNote(Note newNote)
+        //{
+
+        //}
+        public Task<Message> AddNote(Note newNote)
         {
-            
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,0 +1,53 @@
+﻿@page "/ConfirmEmail/{Id}/{Code}"
+
+@inject NotesASPBlazorTask.Data.Services.Authentication.IUserService _userService
+
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <div class="row">
+        <div class="col alert alert-info">
+            @message
+            @{message = string.Empty; }
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col">
+            <p class="text-secondary">
+                This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.<br />
+            </p>
+            <p>Redirect to login page: <NavLink class="btn btn-primary" href="/login">Redirect to login</NavLink></p>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Id { get; set; }
+    [Parameter] public string Code { get; set; }
+
+    bool displayConfirmation = false;
+    string message = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Id) && string.IsNullOrWhiteSpace(Code))
+        {
+            message = "User parameter or confirmation code NOT FOUND";
+            return;
+        }
+
+        ApplicationUser user = await _userService.GetCurrentUserAsync(Id);
+        if (user is null)
+        {
+            message = "User is not exists";
+            return;
+        }
+
+        Code = System.Text.Encoding.UTF8.GetString(Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(Code));
+        Microsoft.AspNetCore.Identity.IdentityResult result = await _userService.ConfirmEmailAsync(user, Code);
+
+        if (result.Succeeded)
+            message = "Thank you for confirming your email.";
+        else
+            message = "Error confirming your email.";
+    }
+}

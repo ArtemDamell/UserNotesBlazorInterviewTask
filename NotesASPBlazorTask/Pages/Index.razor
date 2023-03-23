@@ -3,47 +3,92 @@
 
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
-@if (resultMessage is not null)
-{
-    <div class="alert alert-info">
-        @resultMessage.MessageText
-        @{
-            resultMessage = null;
+<AuthorizeView>
+    <Authorized>
+        <div class="row border border-info rounded align-items-center">
+            <div class="col">
+                <h1 class="text-info">Notes Dashboard</h1>
+            </div>
+            <div class="col text-end">
+                @if (!isProcessing)
+                {
+                    <button class="btn btn-primary text-uppercase">Create note</button>
+                }
+                else
+                {
+                    <button class="btn btn-primary text-uppercase" disabled>Wait</button>
+                }
+
+            </div>
+        </div>
+
+        @if (resultMessage is not null)
+        {
+            <div class="row">
+                <div class="alert alert-@((resultMessage.State == MessageState.Success) ? "success" : "danger")">
+                    @resultMessage.MessageText
+                    @{
+                        resultMessage = null;
+                    }
+                </div>
+            </div>
         }
-    </div>
-}
 
-
-Welcome to your new app.
-
-@if (!isProcessing)
-{
-    <button class="btn btn-primary text-uppercase" @onclick="CreateNote">Create note</button>
-}
-else
-{
-    <button class="btn btn-primary text-uppercase" disabled>Wait</button>
-}
-
+        <div class="row mt-3">
+            @if (userNotes is not null && userNotes.Any())
+            {
+                @foreach (var item in userNotes)
+                {
+                    <div class="col-sm-12 col-md-3">
+                        <div class="card text-center">
+                            <div class="card-header">
+                                @item.Title
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">@item.Body</p>
+                                <a href="#" class="btn btn-primary">Edit</a>
+                                <a href="#" class="btn btn-danger">Delete</a>
+                            </div>
+                            <div class="card-footer text-muted">
+                                @item.CreationDate.ToShortDateString();
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info text-center">
+                    Notes not found ...
+                </div>
+            }
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="row">
+            <div class="col text-center">
+                <h1>Welcome to the personal note manager application</h1>
+                <h5>Please, register account first or login to start to using service.</h5>
+            </div>
+        </div>
+        <div class="row justify-content-between mt-5">
+            <div class="col me-3">
+                <NotesASPBlazorTask.Pages.Authentication.Login />
+            </div>
+            <div class="col">
+                <NotesASPBlazorTask.Pages.Authentication.Registration />
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
-    Note newNote;
+    IEnumerable<Note> userNotes;
     Message? resultMessage = null;
-    bool isProcessing;
+    bool isProcessing = false;
 
-    async Task CreateNote()
+    protected override async Task OnInitializedAsync()
     {
-        isProcessing = true;
-        newNote = new Note
-            {
-                Title = "Simple Title",
-                Body = "Simple body",
-                CreationDate = DateTime.Now,
-                UserId = 1
-            };
 
-        resultMessage = await _noteService.AddNote(newNote);
-        isProcessing = false;
     }
 }

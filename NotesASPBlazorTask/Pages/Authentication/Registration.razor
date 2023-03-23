@@ -1,0 +1,94 @@
+﻿@page "/register"
+
+@inject NotesASPBlazorTask.Data.Services.Authentication.IUserService _userService
+@using NotesASPBlazorTask.Data.Models.Autontication
+
+<div class="row">
+    <div class="col-12">
+        <h2 class="text-uppercase text-center text-info">Account Registration Form</h2>
+    </div>
+</div>
+<div class="row p-4 border rounded">
+    <EditForm Model="@userForRegister" OnValidSubmit="@RegisterFormHandler">
+        <DataAnnotationsValidator />
+        <div class="text-center">
+            <ValidationSummary />
+        </div>
+        <div class="col-8 offset-2">
+            <div class="form-group row">
+                <div class="col-sm-12 col-md-4 mb-3">
+                    First Name:
+                </div>
+                <div class="col-sm-12 col-md-8 mb-3">
+                    <InputText @bind-Value="userForRegister.FirstName" class="form-control" placeholder="John" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-12 col-md-4 mb-3">
+                    Last Name:
+                </div>
+                <div class="col-sm-12 col-md-8 mb-3">
+                    <InputText @bind-Value="userForRegister.LastName" class="form-control" placeholder="Doe" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-12 col-md-4 mb-3">
+                    Email:
+                </div>
+                <div class="col-sm-12 col-md-8 mb-3">
+                    <InputText @bind-Value="userForRegister.Email" class="form-control" placeholder="example@example.com" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-12 col-md-4 mb-3">
+                    Phone:
+                </div>
+                <div class="col-sm-12 col-md-8 mb-3">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="inputGroup-sizing-default">+358</span>
+                        <InputText class="form-control" @bind-Value="userForRegister.Phone" placeholder="403658877" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-12 col-md-4 mb-3">
+                    Password:
+                </div>
+                <div class="col-sm-12 col-md-8 mb-3">
+                    <InputText @bind-Value="userForRegister.Password" type="password" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-12 col-md-4 mb-3">
+                    Confirm Password:
+                </div>
+                <div class="col-sm-12 col-md-8 mb-3">
+                    <InputText @bind-Value="userForRegister.ConfirmPassword" class="form-control" type="password" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-12 col-md-8 offset-md-4">
+                    @if (!isProcess)
+                    {
+                        <button class="btn btn-primary form-control"><i class="fa-solid fa-user-plus"></i> Register Account</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary form-control" disabled><i class="fa-solid fa-snowflake"></i> Wait ...</button>
+                    }
+                </div>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    RegisterInput userForRegister = new();
+    bool isProcess;
+
+    async Task RegisterFormHandler()
+    {
+        isProcess = true;
+        await _userService.CreateNewUser(userForRegister);
+    }
+}

@@ -2,7 +2,7 @@
 {
     public class Message
     {
-        public string Result { get; set; }
+        public MessageState State { get; set; }
         public string MessageText { get; set; }
     }
 }

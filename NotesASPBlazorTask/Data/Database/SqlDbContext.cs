@@ -7,9 +7,11 @@ namespace NotesASPBlazorTask.Data.Database
 {
     public class SqlDbContext : DbContext
     {
-        public SqlDbContext()
+        public SqlDbContext(DbContextOptions<SqlDbContext> options) : base(options)
         {
-            
         }
+
+        public DbSet<Note> Notes { get; set; }
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     }
 }
