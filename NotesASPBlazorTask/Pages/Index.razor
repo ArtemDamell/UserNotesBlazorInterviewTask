@@ -12,7 +12,7 @@
             <div class="col text-end">
                 @if (!isProcessing)
                 {
-                    <button class="btn btn-primary text-uppercase">Create note</button>
+                    <button class="btn btn-primary text-uppercase" @onclick="(() => isCreating = !isCreating)">Create note</button>
                 }
                 else
                 {
@@ -62,6 +62,10 @@
                     Notes not found ...
                 </div>
             }
+            @if (isCreating)
+                {
+                    <NotesASPBlazorTask.Pages.User.CreateNoteModal  OnCancelCreation="(() => isCreating = !isCreating )"/>
+                }
         </div>
     </Authorized>
     <NotAuthorized>
@@ -72,10 +76,10 @@
             </div>
         </div>
         <div class="row justify-content-between mt-5">
-            <div class="col me-3">
+            <div class="col-sm-12 col-md-5">
                 <NotesASPBlazorTask.Pages.Authentication.Login />
             </div>
-            <div class="col">
+            <div class="col-sm-12 mt-3 col-md-6 mt-md-0">
                 <NotesASPBlazorTask.Pages.Authentication.Registration />
             </div>
         </div>
@@ -86,6 +90,8 @@
     IEnumerable<Note> userNotes;
     Message? resultMessage = null;
     bool isProcessing = false;
+    bool isCreating = false;
+    bool isUpdating = false;
 
     protected override async Task OnInitializedAsync()
     {
