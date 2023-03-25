@@ -6,5 +6,7 @@ namespace NotesASPBlazorTask.Data.Services
     {
         Task<IEnumerable<Note>> GetAllNotesAsync(string userId);
         Task<Message> CreateNoteAsync(Note newNote);
+        Task<Message> UpdateNoteAsync(Note editedNote);
+        Task<Message> DeleteNoteAsync(Note deletingNote);
     }
 }

@@ -1,7 +1,7 @@
 ﻿<AuthorizeView>
     <Authorized>
-        <a class="btn btn-outline-dark" href="Identity/Account/Manage">Hello, @context.User.Identity?.Name!</a>
-        <a href="logout" class="btn btn-danger">Log out</a>
+                <NavLink class="btn btn-outline-dark top-line-buttons" href="Identity/Account/Manage"><span class="oi oi-cog"></span></NavLink>
+                <NavLink href="logout" class="btn btn-outline-danger top-line-buttons"><span class="oi oi-power-standby"></span></NavLink>
     </Authorized>
     <NotAuthorized>
         <a class="btn btn-primary" href="register">Register</a>

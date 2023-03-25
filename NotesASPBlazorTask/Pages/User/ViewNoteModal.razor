@@ -1,0 +1,40 @@
+﻿<!-- Modal -->
+<div class="modal fade show" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: block">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary">
+                <h1 class="modal-title fs-5 text-white" id="exampleModalLabel">@Note.Title</h1>
+            </div>
+            <div class="modal-body">
+                <div class="row align-items-center">
+                    <div class="col-12">
+                        @Note.Body
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col-12">
+                        <small class="text-uppercase">Creation date: @Note.CreationDate.ToShortDateString()</small>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-uppercase">Creation time: @Note.CreationDate.ToShortTimeString()</small>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-uppercase">Creator: @Note?.User?.LastName @Note?.User?.FirstName</small>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <button type="button" class="btn btn-secondary" @onclick="OnCancelReading" data-bs-dismiss="modal"><span class="oi oi-x"></span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnCancelReading { get; set; }
+    [Parameter] public Note  Note { get; set; }
+}

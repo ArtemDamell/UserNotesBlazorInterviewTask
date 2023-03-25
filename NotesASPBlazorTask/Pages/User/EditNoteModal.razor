@@ -1,0 +1,50 @@
+﻿<!-- Modal -->
+<div class="modal fade show" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: block">
+    <EditForm Model="NoteForEditing" OnValidSubmit="EditNote">
+        <DataAnnotationsValidator />
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h1 class="modal-title fs-5 text-white" id="exampleModalLabel">Edit Note</h1>
+                    <button type="button" class="btn-close text-white" @onclick="OnCancelEditing" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row align-items-center mb-3">
+                        <div class="col-sm-12 col-md-2">
+                            <label>Title</label>
+                        </div>
+                        <div class="col-sm-12 col-md-10">
+                            <InputText class="form-control" @bind-Value="NoteForEditing.Title" placeholder="Enter a NoteForEditing title here..." />
+                            <ValidationMessage For="(() => NoteForEditing.Title)" />
+                        </div>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col-sm-12 col-md-2">
+                            <label>Note text</label>
+                        </div>
+                        <div class="col-sm-12 col-md-10">
+                            <InputTextArea class="form-control" @bind-Value="NoteForEditing.Body" placeholder="Enter a NoteForEditing text here..." />
+                            <ValidationMessage For="(() => NoteForEditing.Body)" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" @onclick="OnCancelEditing" data-bs-dismiss="modal"><span class="oi oi-x"></span></button>
+                    <button type="submit" class="btn btn-primary"><span class="oi oi-task"></span></button>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public EventCallback<Note> OnNoteEditing { get; set; }
+    [Parameter] public EventCallback OnCancelEditing { get; set; }
+    [Parameter] public Note NoteForEditing { get; set; }
+
+    async Task EditNote()
+    {
+        NoteForEditing.CreationDate = DateTime.Now;
+        await OnNoteEditing.InvokeAsync(NoteForEditing);
+    }
+}

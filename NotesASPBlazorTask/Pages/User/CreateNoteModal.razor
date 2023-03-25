@@ -1,5 +1,4 @@
-﻿@inject AuthenticationStateProvider _authState
-<!-- Modal -->
+﻿<!-- Modal -->
 <div class="modal fade show" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: block">
     <EditForm Model="note" OnValidSubmit="CreateNewNote">
         <DataAnnotationsValidator />
@@ -41,19 +40,13 @@
 @code {
     [Parameter] public EventCallback<Note> OnNoteCreation { get; set; }
     [Parameter] public EventCallback OnCancelCreation { get; set; }
+    [Parameter] public string UserId { get; set; }
 
     Note note = new();
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        var authStateProv = (CustomeAuthStateProvider)_authState;
-        var state = await authStateProv.GetAuthenticationStateAsync();
-
-
-        if (state.User.Identity.IsAuthenticated)
-        {
-            note.UserId = state.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value;
-        }
+        note.UserId = UserId;
     }
 
     async Task CreateNewNote()

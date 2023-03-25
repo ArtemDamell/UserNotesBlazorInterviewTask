@@ -43,20 +43,20 @@
             {
                 @foreach (var item in userNotes)
                 {
-                    <div class="col-sm-12 col-md-3">
+                    <div class="col-12 mb-3 col-md-3">
                         <div class="card text-center">
                             <div class="card-header stickerBg">
-                                <h3>@item.Title.GetShortDescription(100, false)</h3>
+                                <h3>@item.Title.GetShortDescription(20, false)</h3>
                             </div>
                             <div class="card-body stickerBg">
-                                <p class="card-text">@item.Body.GetShortDescription(30)</p>
+                                <p class="card-text">@item.Body.GetShortDescription(10)</p>
                             </div>
                             <div class="card-footer text-muted stickerBg">
                                 <small>Created: @item.CreationDate.ToShortDateString()</small><br />
                                 <div class="btn-group" role="group" aria-label="Basic outlined example">
-                                    <a href="#" class="btn btn-outline-secondary"><span class="oi oi-eye"></span></a>
-                                    <a href="#" class="btn btn-outline-primary"><span class="oi oi-pencil"></span></a>
-                                    <a href="#" class="btn btn-outline-danger"><span class="oi oi-trash"></span></a>
+                                    <button @onclick="(()=> ViewNoteHandler(item))" class="btn btn-outline-secondary"><span class="oi oi-eye"></span></button>
+                                    <button @onclick="(()=> OpenEditingHandler(item))" class="btn btn-outline-primary"><span class="oi oi-pencil"></span></button>
+                                    <button @onclick="(()=> OpenDeletingHandler(item))" class="btn btn-outline-danger"><span class="oi oi-trash"></span></button>
                                 </div>
                             </div>
                         </div>
@@ -71,8 +71,20 @@
             }
             @if (isCreating)
             {
-                <NotesASPBlazorTask.Pages.User.CreateNoteModal OnCancelCreation="(() => isCreating = !isCreating )" OnNoteCreation="CreateNoteAsync" />
+                <NotesASPBlazorTask.Pages.User.CreateNoteModal OnCancelCreation="(() => isCreating = !isCreating)" OnNoteCreation="CreateNoteAsync" UserId="@userId" />
             }
+            @if (isReading)
+            {
+                <NotesASPBlazorTask.Pages.User.ViewNoteModal OnCancelReading="(()=> isReading = !isReading)" Note="noteForReading" />
+            }
+            @if (isUpdating)
+            {
+                <NotesASPBlazorTask.Pages.User.EditNoteModal NoteForEditing="noteForReading" OnCancelEditing="(()=> isUpdating = !isUpdating)" OnNoteEditing="EditNoteHandler" />
+            }
+            @if (isDeleting)
+                {
+                    <NotesASPBlazorTask.Pages.User.DeleteNoteModal NoteForDeleting="noteForReading" OnCancelDeleting="(()=> isDeleting = !isDeleting)" OnNoteDelete="DeleteNoteHandler" />
+                }
         </div>
     </Authorized>
     <NotAuthorized>
@@ -95,10 +107,13 @@
 
 @code {
     IEnumerable<Note> userNotes;
+    Note noteForReading;
     Message? resultMessage = null;
     bool isProcessing = false;
     bool isCreating = false;
     bool isUpdating = false;
+    bool isReading = false;
+    bool isDeleting = false;
     string userId = string.Empty;
 
     protected override async Task OnInitializedAsync()
@@ -119,16 +134,61 @@
     {
         isProcessing = true;
         isCreating = false;
-        var result = await _noteService.CreateNoteAsync(createdNote);
+        Message result = await _noteService.CreateNoteAsync(createdNote);
 
         if (result.State == MessageState.Success)
         {
-            resultMessage = result;
             userNotes = await _noteService.GetAllNotesAsync(userId);
         }
-        else if (result.State == MessageState.Failed)
-            resultMessage = result;
+
+        resultMessage = result;
 
         isProcessing = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    void ViewNoteHandler(Note note)
+    {
+        noteForReading = note;
+        isReading = true;
+    }
+
+    void OpenEditingHandler(Note note)
+    {
+        noteForReading = note;
+        isUpdating = true;
+    }
+
+    async Task EditNoteHandler(Note note)
+    {
+        isUpdating = false;
+        Message result = await _noteService.UpdateNoteAsync(note);
+
+        if (result.State == MessageState.Success)
+        {
+            userNotes = await _noteService.GetAllNotesAsync(userId);
+        }
+
+        resultMessage = result;
+
+    }
+
+    void OpenDeletingHandler(Note note)
+    {
+        noteForReading = note;
+        isDeleting = true;
+    }
+
+    async Task DeleteNoteHandler(Note noteForDeleting)
+    {
+        isDeleting = false;
+        Message result = await _noteService.DeleteNoteAsync(noteForDeleting);
+
+        if (result.State == MessageState.Success)
+        {
+            userNotes = await _noteService.GetAllNotesAsync(userId);
+        }
+
+        resultMessage = result;
     }
 }

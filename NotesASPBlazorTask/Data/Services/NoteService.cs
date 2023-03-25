@@ -16,7 +16,7 @@ namespace NotesASPBlazorTask.Data.Services
 
         public async Task<IEnumerable<Note>> GetAllNotesAsync(string userId)
         {
-            var allUserNotes = await _sqlDbContext.Notes.Where(x => x.UserId == userId).ToListAsync();
+            var allUserNotes = await _sqlDbContext.Notes.Include(u => u.User).Where(x => x.UserId == userId).ToListAsync();
             return allUserNotes;
         }
 
@@ -38,6 +38,46 @@ namespace NotesASPBlazorTask.Data.Services
                 return await Task.FromResult(new Message { State = MessageState.Failed, MessageText = ex.Message});
             }
             return await Task.FromResult(new Message { State = MessageState.Success, MessageText = $"Note '{newNote.Title}' has been created"});
+        }
+
+        public async Task<Message> UpdateNoteAsync(Note editedNote)
+        {
+            if (editedNote is null)
+            {
+                var message = new Message { State = MessageState.Failed, MessageText = "Edited note cannot be null" };
+                return await Task.FromResult(message);
+            }
+
+            try
+            {
+               _sqlDbContext.Notes.Update(editedNote);
+               await _sqlDbContext.SaveChangesAsync(true);
+            }
+            catch (Exception ex)
+            {
+                return await Task.FromResult(new Message { State = MessageState.Failed, MessageText = ex.Message });
+            }
+            return await Task.FromResult(new Message { State = MessageState.Success, MessageText = $"Note '{editedNote.Title}' has been updated" });
+        }
+
+        public async Task<Message> DeleteNoteAsync(Note deletingNote)
+        {
+            if (deletingNote is null)
+            {
+                var message = new Message { State = MessageState.Failed, MessageText = "Note for deleting cannot be null" };
+                return await Task.FromResult(message);
+            }
+
+            try
+            {
+                _sqlDbContext.Notes.Remove(deletingNote);
+                await _sqlDbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return await Task.FromResult(new Message { State = MessageState.Failed, MessageText = ex.Message });
+            }
+            return await Task.FromResult(new Message { State = MessageState.Success, MessageText = $"Note '{deletingNote.Title}' has been deleted" });
         }
     }
 }

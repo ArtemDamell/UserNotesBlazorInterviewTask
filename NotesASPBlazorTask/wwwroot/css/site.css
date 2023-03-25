@@ -70,3 +70,9 @@ a, .btn-link {
 .stickerBg {
     background-color: #ffff0047;
 }
+
+.top-line-buttons {
+    display: flex;
+    align-self: center;
+    padding: 10px 10px 10px 10px !important;
+}
