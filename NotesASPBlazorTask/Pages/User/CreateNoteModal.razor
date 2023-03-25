@@ -1,23 +1,64 @@
-﻿<!-- Modal -->
+﻿@inject AuthenticationStateProvider _authState
+<!-- Modal -->
 <div class="modal fade show" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: block">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-                <button type="button" class="btn-close" @onclick="OnCancelCreation" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                ...
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary"  @onclick="OnCancelCreation" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
+    <EditForm Model="note" OnValidSubmit="CreateNewNote">
+        <DataAnnotationsValidator />
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h1 class="modal-title fs-5 text-white" id="exampleModalLabel">Create New Note</h1>
+                    <button type="button" class="btn-close text-white" @onclick="OnCancelCreation" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row align-items-center mb-3">
+                        <div class="col-sm-12 col-md-2">
+                            <label>Title</label>
+                        </div>
+                        <div class="col-sm-12 col-md-10">
+                            <InputText class="form-control" @bind-Value="note.Title" placeholder="Enter a note title here..." />
+                            <ValidationMessage For="(()=> note.Title)" />
+                        </div>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col-sm-12 col-md-2">
+                            <label>Note text</label>
+                        </div>
+                        <div class="col-sm-12 col-md-10">
+                            <InputTextArea class="form-control" @bind-Value="note.Body" placeholder="Enter a note text here..." />
+                            <ValidationMessage For="(()=> note.Body)" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="OnCancelCreation" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success">Save changes</button>
+                </div>
             </div>
         </div>
-    </div>
+    </EditForm>
 </div>
 
 @code {
     [Parameter] public EventCallback<Note> OnNoteCreation { get; set; }
     [Parameter] public EventCallback OnCancelCreation { get; set; }
+
+    Note note = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authStateProv = (CustomeAuthStateProvider)_authState;
+        var state = await authStateProv.GetAuthenticationStateAsync();
+
+
+        if (state.User.Identity.IsAuthenticated)
+        {
+            note.UserId = state.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value;
+        }
+    }
+
+    async Task CreateNewNote()
+    {
+        note.CreationDate = DateTime.Now;
+        await OnNoteCreation.InvokeAsync(note);
+    }
 }

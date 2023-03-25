@@ -4,6 +4,7 @@ namespace NotesASPBlazorTask.Data.Services
 {
     public interface INoteService
     {
-        Task<Message> AddNote(Note newNote);
+        Task<IEnumerable<Note>> GetAllNotesAsync(string userId);
+        Task<Message> CreateNoteAsync(Note newNote);
     }
 }

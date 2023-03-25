@@ -1,5 +1,8 @@
 ﻿@page "/"
+
 @inject INoteService _noteService
+@inject Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedSessionStorage _sessionStorage
+@inject AuthenticationStateProvider _authState
 
 <PageTitle>Index</PageTitle>
 
@@ -24,12 +27,13 @@
 
         @if (resultMessage is not null)
         {
-            <div class="row">
-                <div class="alert alert-@((resultMessage.State == MessageState.Success) ? "success" : "danger")">
+            <div class="row mt-3">
+                <div class="alert alert-@((resultMessage.State == MessageState.Success) ? "success" : "danger") alert-dismissible fade show" role="alert">
                     @resultMessage.MessageText
                     @{
                         resultMessage = null;
                     }
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             </div>
         }
@@ -41,16 +45,19 @@
                 {
                     <div class="col-sm-12 col-md-3">
                         <div class="card text-center">
-                            <div class="card-header">
-                                @item.Title
+                            <div class="card-header stickerBg">
+                                <h3>@item.Title.GetShortDescription(100, false)</h3>
                             </div>
-                            <div class="card-body">
-                                <p class="card-text">@item.Body</p>
-                                <a href="#" class="btn btn-primary">Edit</a>
-                                <a href="#" class="btn btn-danger">Delete</a>
+                            <div class="card-body stickerBg">
+                                <p class="card-text">@item.Body.GetShortDescription(30)</p>
                             </div>
-                            <div class="card-footer text-muted">
-                                @item.CreationDate.ToShortDateString();
+                            <div class="card-footer text-muted stickerBg">
+                                <small>Created: @item.CreationDate.ToShortDateString()</small><br />
+                                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                                    <a href="#" class="btn btn-outline-secondary"><span class="oi oi-eye"></span></a>
+                                    <a href="#" class="btn btn-outline-primary"><span class="oi oi-pencil"></span></a>
+                                    <a href="#" class="btn btn-outline-danger"><span class="oi oi-trash"></span></a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -63,9 +70,9 @@
                 </div>
             }
             @if (isCreating)
-                {
-                    <NotesASPBlazorTask.Pages.User.CreateNoteModal  OnCancelCreation="(() => isCreating = !isCreating )"/>
-                }
+            {
+                <NotesASPBlazorTask.Pages.User.CreateNoteModal OnCancelCreation="(() => isCreating = !isCreating )" OnNoteCreation="CreateNoteAsync" />
+            }
         </div>
     </Authorized>
     <NotAuthorized>
@@ -92,9 +99,36 @@
     bool isProcessing = false;
     bool isCreating = false;
     bool isUpdating = false;
+    string userId = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
+        var authStateProv = (CustomeAuthStateProvider)_authState;
+        var state = await authStateProv.GetAuthenticationStateAsync();
 
+
+        if (state.User.Identity.IsAuthenticated)
+        {
+            userId = state.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value;
+            if (!string.IsNullOrWhiteSpace(userId))
+                userNotes = await _noteService.GetAllNotesAsync(userId);
+        }
+    }
+
+    async Task CreateNoteAsync(Note createdNote)
+    {
+        isProcessing = true;
+        isCreating = false;
+        var result = await _noteService.CreateNoteAsync(createdNote);
+
+        if (result.State == MessageState.Success)
+        {
+            resultMessage = result;
+            userNotes = await _noteService.GetAllNotesAsync(userId);
+        }
+        else if (result.State == MessageState.Failed)
+            resultMessage = result;
+
+        isProcessing = false;
     }
 }
