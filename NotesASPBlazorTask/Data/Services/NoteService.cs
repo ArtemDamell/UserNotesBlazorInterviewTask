@@ -79,5 +79,43 @@ namespace NotesASPBlazorTask.Data.Services
             }
             return await Task.FromResult(new Message { State = MessageState.Success, MessageText = $"Note '{deletingNote.Title}' has been deleted" });
         }
+
+        public async Task<IEnumerable<Note>> GetNotesByCondition(string noteCondition, string userId)
+        {
+            var userNotieces = await _sqlDbContext.Notes.Where(n => n.UserId == userId).ToListAsync();
+            var filteredNotieces = userNotieces.Where(n => n.Title.Contains(noteCondition, StringComparison.OrdinalIgnoreCase) || n.Body.Contains(noteCondition, StringComparison.OrdinalIgnoreCase)).ToList();
+            return filteredNotieces;
+        }
+
+        public IEnumerable<Note> GetDemoNotieces()
+        {
+            return new List<Note>
+            {
+                new Note()
+                {
+                     Title = "Remember work!",
+                     Body = "The main task of a programmer is to solve the problems of other people, and not to sit in social networks. Remember work!",
+                     CreationDate = DateTime.Now
+                },
+                new Note()
+                {
+                     Title = "Remember eat!",
+                     Body = "Food is a very important part of a programmer's job. Remember about it!",
+                     CreationDate = DateTime.Now
+                },
+                new Note()
+                {
+                     Title = "Remember sleep!",
+                     Body = "Without proper sleep, a programmer cannot do his difficult work. Remember sleep!",
+                     CreationDate = DateTime.Now
+                },
+                new Note()
+                {
+                     Title = "Remember repeat!",
+                     Body = "Tomorrow this whole cycle of notes will start over again.",
+                     CreationDate = DateTime.Now
+                }
+            };
+        }
     }
 }

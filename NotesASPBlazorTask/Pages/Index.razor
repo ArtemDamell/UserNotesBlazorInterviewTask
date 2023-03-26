@@ -1,7 +1,6 @@
 ﻿@page "/"
 
 @inject INoteService _noteService
-@inject Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedSessionStorage _sessionStorage
 @inject AuthenticationStateProvider _authState
 
 <PageTitle>Index</PageTitle>
@@ -13,15 +12,15 @@
                 <h1 class="text-info">Notes Dashboard</h1>
             </div>
             <div class="col text-end">
-                @if (!isProcessing)
-                {
-                    <button class="btn btn-primary text-uppercase" @onclick="(() => isCreating = !isCreating)">Create note</button>
-                }
-                else
-                {
-                    <button class="btn btn-primary text-uppercase" disabled>Wait</button>
-                }
-
+                <button class="btn btn-primary text-uppercase" @onclick="(() => OpenModalHandler(CRUDState.Create))">Create note</button>
+            </div>
+        </div>
+        <div class="row py-4 align-items-center">
+            <div class="col-9">
+                <input class="form-control" @bind-value="searchCondition" />
+            </div>
+            <div class="col-3">
+                <button class="btn btn-primary text-uppercase form-control" @onclick="(() => SearchHandler(searchCondition))"><span class="oi oi-magnifying-glass"></span></button>
             </div>
         </div>
 
@@ -41,51 +40,62 @@
         <div class="row mt-3">
             @if (userNotes is not null && userNotes.Any())
             {
-                @foreach (var item in userNotes)
-                {
-                    <div class="col-12 mb-3 col-md-3">
-                        <div class="card text-center">
-                            <div class="card-header stickerBg">
-                                <h3>@item.Title.GetShortDescription(20, false)</h3>
-                            </div>
-                            <div class="card-body stickerBg">
-                                <p class="card-text">@item.Body.GetShortDescription(10)</p>
-                            </div>
-                            <div class="card-footer text-muted stickerBg">
-                                <small>Created: @item.CreationDate.ToShortDateString()</small><br />
-                                <div class="btn-group" role="group" aria-label="Basic outlined example">
-                                    <button @onclick="(()=> ViewNoteHandler(item))" class="btn btn-outline-secondary"><span class="oi oi-eye"></span></button>
-                                    <button @onclick="(()=> OpenEditingHandler(item))" class="btn btn-outline-primary"><span class="oi oi-pencil"></span></button>
-                                    <button @onclick="(()=> OpenDeletingHandler(item))" class="btn btn-outline-danger"><span class="oi oi-trash"></span></button>
+                <div class="sticker">
+                    <ul class="text-center mb-5">
+                        @foreach (var item in userNotes)
+                        {
+                            <li>
+                                <h2>@item.Title.GetShortDescription(20, false)</h2>
+                                <p>@item.Body.GetShortDescription(50)</p>
+                                <div class="text-center">
+                                    <small>Created: @item.CreationDate.ToShortDateString()</small><br />
+                                    <div class="btn-group" role="group" aria-label="Basic outlined example">
+                                        <button @onclick="(()=> OpenModalHandler(CRUDState.Read, item))" class="btn btn-outline-secondary"><span class="oi oi-eye"></span></button>
+                                        <button @onclick="(()=> OpenModalHandler(CRUDState.Update, item))" class="btn btn-outline-primary"><span class="oi oi-pencil"></span></button>
+                                        <button @onclick="(()=> OpenModalHandler(CRUDState.Delete, item))" class="btn btn-outline-danger"><span class="oi oi-trash"></span></button>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                }
+                            </li>
+                        }
+                    </ul>
+                </div>
             }
-            else
+            else if (userNotes?.Count() == 0)
             {
                 <div class="alert alert-info text-center">
                     Notes not found ...
                 </div>
             }
-            @if (isCreating)
+            else
             {
-                <NotesASPBlazorTask.Pages.User.CreateNoteModal OnCancelCreation="(() => isCreating = !isCreating)" OnNoteCreation="CreateNoteAsync" UserId="@userId" />
+                <div class="alert alert-info text-center">
+                    Loading your notes ...
+                </div>
             }
-            @if (isReading)
+
+            @if (crudAction == CRUDState.Create)
             {
-                <NotesASPBlazorTask.Pages.User.ViewNoteModal OnCancelReading="(()=> isReading = !isReading)" Note="noteForReading" />
+                <NotesASPBlazorTask.Pages.User.CreateNoteModal OnCancelCreation="(() => crudAction = CRUDState.None)" OnNoteCreation="CreateNoteAsync" UserId="@userId" />
             }
-            @if (isUpdating)
+            @if (crudAction == CRUDState.Read)
             {
-                <NotesASPBlazorTask.Pages.User.EditNoteModal NoteForEditing="noteForReading" OnCancelEditing="(()=> isUpdating = !isUpdating)" OnNoteEditing="EditNoteHandler" />
+                <NotesASPBlazorTask.Pages.User.ViewNoteModal OnCancelReading="(() => crudAction = CRUDState.None)" Note="noteObject" />
             }
-            @if (isDeleting)
-                {
-                    <NotesASPBlazorTask.Pages.User.DeleteNoteModal NoteForDeleting="noteForReading" OnCancelDeleting="(()=> isDeleting = !isDeleting)" OnNoteDelete="DeleteNoteHandler" />
-                }
+            @if (crudAction == CRUDState.Update)
+            {
+                <NotesASPBlazorTask.Pages.User.EditNoteModal NoteForEditing="noteObject" OnCancelEditing="(()=> crudAction = CRUDState.None)" OnNoteEditing="EditNoteHandler" />
+            }
+            @if (crudAction == CRUDState.Delete)
+            {
+                <NotesASPBlazorTask.Pages.User.DeleteNoteModal NoteForDeleting="noteObject" OnCancelDeleting="(()=> crudAction = CRUDState.None)" OnNoteDelete="DeleteNoteHandler" />
+            }
         </div>
+        @if (userNotes is not null)
+        {
+            <div class="row">
+                <Pagination Items="userNotes" PageSize="6" />
+            </div>
+        }
     </Authorized>
     <NotAuthorized>
         <div class="row">
@@ -95,26 +105,36 @@
             </div>
         </div>
         <div class="row justify-content-between mt-5">
-            <div class="col-sm-12 col-md-5">
-                <NotesASPBlazorTask.Pages.Authentication.Login />
-            </div>
-            <div class="col-sm-12 mt-3 col-md-6 mt-md-0">
-                <NotesASPBlazorTask.Pages.Authentication.Registration />
-            </div>
+            @if (demoNotes is not null)
+            {
+                <div class="sticker">
+                    <ul class="text-center mb-5">
+                        @foreach (var item in demoNotes)
+                        {
+                            <li>
+                                <h2>@item.Title</h2>
+                                <p>@item.Body</p>
+                                <div class="text-center">
+                                    <small>Created: @item.CreationDate.ToShortDateString()</small><br />
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
         </div>
     </NotAuthorized>
 </AuthorizeView>
 
 @code {
     IEnumerable<Note> userNotes;
-    Note noteForReading;
+    IEnumerable<Note> demoNotes;
+    Note? noteObject;
     Message? resultMessage = null;
-    bool isProcessing = false;
-    bool isCreating = false;
-    bool isUpdating = false;
-    bool isReading = false;
-    bool isDeleting = false;
     string userId = string.Empty;
+    string searchCondition = string.Empty;
+
+    CRUDState crudAction = CRUDState.None;
 
     protected override async Task OnInitializedAsync()
     {
@@ -127,68 +147,80 @@
             userId = state.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value;
             if (!string.IsNullOrWhiteSpace(userId))
                 userNotes = await _noteService.GetAllNotesAsync(userId);
+            return;
         }
+        else
+            demoNotes = _noteService.GetDemoNotieces();
     }
 
     async Task CreateNoteAsync(Note createdNote)
     {
-        isProcessing = true;
-        isCreating = false;
+        crudAction = CRUDState.None;
+
         Message result = await _noteService.CreateNoteAsync(createdNote);
 
         if (result.State == MessageState.Success)
-        {
             userNotes = await _noteService.GetAllNotesAsync(userId);
-        }
 
         resultMessage = result;
-
-        isProcessing = false;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    void ViewNoteHandler(Note note)
-    {
-        noteForReading = note;
-        isReading = true;
-    }
-
-    void OpenEditingHandler(Note note)
-    {
-        noteForReading = note;
-        isUpdating = true;
     }
 
     async Task EditNoteHandler(Note note)
     {
-        isUpdating = false;
+        crudAction = CRUDState.None;
         Message result = await _noteService.UpdateNoteAsync(note);
 
         if (result.State == MessageState.Success)
-        {
             userNotes = await _noteService.GetAllNotesAsync(userId);
-        }
 
         resultMessage = result;
-
-    }
-
-    void OpenDeletingHandler(Note note)
-    {
-        noteForReading = note;
-        isDeleting = true;
     }
 
     async Task DeleteNoteHandler(Note noteForDeleting)
     {
-        isDeleting = false;
+        crudAction = CRUDState.None;
         Message result = await _noteService.DeleteNoteAsync(noteForDeleting);
 
         if (result.State == MessageState.Success)
-        {
             userNotes = await _noteService.GetAllNotesAsync(userId);
-        }
 
         resultMessage = result;
+    }
+
+    void OpenModalHandler(CRUDState action, Note? note = null)
+    {
+        switch (action)
+        {
+            case CRUDState.Create:
+                noteObject = new();
+                crudAction = action;
+                break;
+
+            case CRUDState.Read:
+                noteObject = note;
+                crudAction = action;
+                break;
+
+            case CRUDState.Update:
+                noteObject = note;
+                crudAction = action;
+                break;
+
+            case CRUDState.Delete:
+                noteObject = note;
+                crudAction = action;
+                break;
+        }
+    }
+
+    async Task SearchHandler(string searchConditions)
+    {
+        if (string.IsNullOrWhiteSpace(searchConditions))
+        {
+            userNotes = await _noteService.GetAllNotesAsync(userId);
+            return;
+        }
+
+        userNotes = await _noteService.GetNotesByCondition(searchConditions, userId);
     }
 }

@@ -6,7 +6,7 @@
         {
             var textResult = text.Substring(0, Math.Min(lenght, text.Length));
             if (dotsAdding)
-                return textResult + "...";
+                return textResult + " ...";
             else 
                 return textResult;
         }

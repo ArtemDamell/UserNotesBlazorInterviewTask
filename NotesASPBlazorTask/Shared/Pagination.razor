@@ -1,0 +1,52 @@
+﻿<div class="pagination">
+    <ul>
+        <li>
+            <button disabled="@IsFirstPage()" @onclick="MoveToFirstPage">First</button>
+        </li>
+        <li>
+            <button disabled="@IsFirstPage()" @onclick="MoveToPreviousPage">Previous</button>
+        </li>
+        <li>
+            Page @CurrentPage of @TotalPages
+        </li>
+        <li>
+            <button disabled="@IsLastPage()" @onclick="MoveToNextPage">Next</button>
+        </li>
+        <li>
+            <button disabled="@IsLastPage()" @onclick="MoveToLastPage">Last</button>
+        </li>
+    </ul>
+</div>
+
+@if (Items != null)
+{
+    <div class="items">
+        @foreach (var item in Items.Skip((CurrentPage - 1) * PageSize).Take(PageSize))
+        {
+            <div>@item</div>
+        }
+    </div>
+}
+else
+{
+    <div>Loading...</div>
+}
+
+@code {
+    [Parameter]
+    public IEnumerable<Note> Items { get; set; }
+
+    [Parameter]
+    public int PageSize { get; set; } = 10;
+
+    public int CurrentPage { get; set; } = 1;
+    public int TotalPages => (int)Math.Ceiling((double)Items.Count() / PageSize);
+
+    public bool IsFirstPage() => CurrentPage == 1;
+    public bool IsLastPage() => CurrentPage == TotalPages;
+
+    private void MoveToFirstPage() => CurrentPage = 1;
+    private void MoveToPreviousPage() => CurrentPage--;
+    private void MoveToNextPage() => CurrentPage++;
+    private void MoveToLastPage() => CurrentPage = TotalPages;
+}
