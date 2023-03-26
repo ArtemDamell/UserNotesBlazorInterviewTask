@@ -43,3 +43,10 @@ Bonus points for implementing additional features such as:
 ### 6.	Test and deploy
   - Test the application thoroughly to ensure all functionality works as expected and security vulnerabilities have been addressed
   - Deploy the application to a hosting service, such as Microsoft Azure or Amazon Web Services, or to a self-hosted server
+
+# The following technologies are used in this implementation:
+- Blazor Server Side
+- SQLite Database
+- Entity Framework
+- ASP .NET Identity
+- SOLID
