@@ -14,7 +14,7 @@ namespace NotesASPBlazorTask.Data.Services
             _sqlDbContext = sqlDbContext;
         }
 
-        public async Task<IEnumerable<Note>> GetAllNotesAsync(string userId)
+        public async Task<List<Note>> GetAllNotesAsync(string userId)
         {
             var allUserNotes = await _sqlDbContext.Notes.Include(u => u.User).Where(x => x.UserId == userId).ToListAsync();
             return allUserNotes;

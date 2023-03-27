@@ -1,52 +1,72 @@
-﻿<div class="pagination">
-    <ul>
-        <li>
-            <button disabled="@IsFirstPage()" @onclick="MoveToFirstPage">First</button>
+﻿<nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+        <li class="page-item">
+            <button class="page-link @((@IsFirstPage()) ? "disabled" : "")"  @onclick="MoveToFirstPage">First</button>
         </li>
-        <li>
-            <button disabled="@IsFirstPage()" @onclick="MoveToPreviousPage">Previous</button>
+        <li class="page-item">
+            <button class="page-link @((@IsFirstPage()) ? "disabled" : "")" @onclick="MoveToPreviousPage">Previous</button>
         </li>
-        <li>
-            Page @CurrentPage of @TotalPages
+        <li class="page-item">
+            <span class="page-link text-black">Page @CurrentPage of @TotalPages</span>
         </li>
-        <li>
-            <button disabled="@IsLastPage()" @onclick="MoveToNextPage">Next</button>
+        <li class="page-item">
+            <button class="page-link @((@IsLastPage()) ? "disabled" : "")" @onclick="MoveToNextPage">Next</button>
         </li>
-        <li>
-            <button disabled="@IsLastPage()" @onclick="MoveToLastPage">Last</button>
+        <li class="page-item">
+            <button class="page-link @((@IsLastPage()) ? "disabled" : "")" @onclick="MoveToLastPage">Last</button>
         </li>
     </ul>
-</div>
-
-@if (Items != null)
-{
-    <div class="items">
-        @foreach (var item in Items.Skip((CurrentPage - 1) * PageSize).Take(PageSize))
-        {
-            <div>@item</div>
-        }
-    </div>
-}
-else
-{
-    <div>Loading...</div>
-}
+</nav>
 
 @code {
-    [Parameter]
-    public IEnumerable<Note> Items { get; set; }
-
-    [Parameter]
-    public int PageSize { get; set; } = 10;
+    [Parameter] public List<Note> Items { get; set; }
+    [Parameter] public EventCallback<IEnumerable<Note>> OnPagedList { get; set; }
+    [Parameter] public int PageSize { get; set; } = 10;
 
     public int CurrentPage { get; set; } = 1;
+    IEnumerable<Note> filteredNoteList;
+
     public int TotalPages => (int)Math.Ceiling((double)Items.Count() / PageSize);
 
     public bool IsFirstPage() => CurrentPage == 1;
     public bool IsLastPage() => CurrentPage == TotalPages;
 
-    private void MoveToFirstPage() => CurrentPage = 1;
-    private void MoveToPreviousPage() => CurrentPage--;
-    private void MoveToNextPage() => CurrentPage++;
-    private void MoveToLastPage() => CurrentPage = TotalPages;
+    protected override void OnInitialized()
+    {
+        filteredNoteList = Items.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+        OnPagedList.InvokeAsync(filteredNoteList);
+    }
+
+    private void MoveToFirstPage()
+    {
+        CurrentPage = 1;
+        filteredNoteList = Items.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+        OnPagedList.InvokeAsync(filteredNoteList);
+    }
+    private void MoveToPreviousPage()
+    {
+        CurrentPage--;
+        filteredNoteList = Items.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+        OnPagedList.InvokeAsync(filteredNoteList);
+    }
+    private void MoveToNextPage()
+    {
+        CurrentPage++;
+        filteredNoteList = Items.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+        OnPagedList.InvokeAsync(filteredNoteList);
+    }
+    private void MoveToLastPage()
+    {
+        CurrentPage = TotalPages;
+        filteredNoteList = Items.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+        OnPagedList.InvokeAsync(filteredNoteList);
+    }
+
+    public void HandleListUpdated(List<Note> updatedList)
+    {
+        Items = updatedList;
+        filteredNoteList = Items.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+        OnPagedList.InvokeAsync(filteredNoteList);
+        StateHasChanged();
+    }
 }

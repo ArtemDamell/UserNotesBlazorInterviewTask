@@ -38,11 +38,11 @@
         }
 
         <div class="row mt-3">
-            @if (userNotes is not null && userNotes.Any())
+            @if (filteredListForView is not null && filteredListForView.Any())
             {
                 <div class="sticker">
                     <ul class="text-center mb-5">
-                        @foreach (var item in userNotes)
+                        @foreach (var item in filteredListForView)
                         {
                             <li>
                                 <h2>@item.Title.GetShortDescription(20, false)</h2>
@@ -60,7 +60,7 @@
                     </ul>
                 </div>
             }
-            else if (userNotes?.Count() == 0)
+            else if (filteredListForView?.Count() == 0)
             {
                 <div class="alert alert-info text-center">
                     Notes not found ...
@@ -92,8 +92,10 @@
         </div>
         @if (userNotes is not null)
         {
-            <div class="row">
-                <Pagination Items="userNotes" PageSize="6" />
+            <div class="row mb-5 justify-content-between">
+                <div class="col-6 m-auto">
+                    <Pagination Items="userNotes" PageSize="6" OnPagedList="ShowPagedListHandler" @ref="refPagination" />
+                </div>
             </div>
         }
     </Authorized>
@@ -127,13 +129,15 @@
 </AuthorizeView>
 
 @code {
-    IEnumerable<Note> userNotes;
+    List<Note> userNotes;
     IEnumerable<Note> demoNotes;
+    IEnumerable<Note> filteredListForView;
     Note? noteObject;
     Message? resultMessage = null;
     string userId = string.Empty;
     string searchCondition = string.Empty;
 
+    Pagination refPagination;
     CRUDState crudAction = CRUDState.None;
 
     protected override async Task OnInitializedAsync()
@@ -218,9 +222,24 @@
         if (string.IsNullOrWhiteSpace(searchConditions))
         {
             userNotes = await _noteService.GetAllNotesAsync(userId);
+            refPagination.HandleListUpdated(userNotes);
             return;
         }
 
-        userNotes = await _noteService.GetNotesByCondition(searchConditions, userId);
+        var notes = await _noteService.GetNotesByCondition(searchConditions, userId);
+        userNotes = notes.ToList();
+        refPagination.HandleListUpdated(userNotes);
     }
+
+    void ShowPagedListHandler(IEnumerable<Note> filteredList) 
+    {
+        filteredListForView = filteredList;
+        StateHasChanged();
+    }
+
+    //private void UpdateList(List<Note> updatedList)
+    //{
+    //    // Raise the ListUpdated event with the updated list
+    //    ListUpdated?.Invoke(updatedList);
+    //}
 }
