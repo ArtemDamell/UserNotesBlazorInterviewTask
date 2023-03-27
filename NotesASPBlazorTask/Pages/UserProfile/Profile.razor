@@ -1,0 +1,104 @@
+﻿@page "/profile"
+
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+@using NotesASPBlazorTask.Data.Models.Autontication;
+@using NotesASPBlazorTask.Data.Services;
+@using NotesASPBlazorTask.Data.Services.Authentication;
+
+@inject ProtectedSessionStorage _sessionStorage
+@inject IUserService _userService
+
+@if (sessionInfo != null)
+{
+    <div class="row border border-primary rounded mb-5">
+        <div class="col-12 col-md-6 m-auto">
+            <h1 class="text-center text-primary">@sessionInfo.FirstName @sessionInfo.LastName profile</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-6 card shadow-profile border-bottom">
+            <div class="row bg-info">
+                <h2 class="text-center px-3">Profile user info</h2>
+            </div>
+
+            <div class="row mb-1">
+                <div class="col-12 col-md-6">
+                    <label class="alert"><span class="oi oi-person border-end pe-3"></span> @userInfo.FirstName @userInfo.LastName</label>
+                </div>
+            </div>
+            <div class="row mb-1">
+                <div class="col-12 col-md-4">
+                    <label class="alert"><span class="oi oi-phone border-end pe-3"></span> @userInfo.PhoneNumber</label>
+                </div>
+                <div class="col-12 col-md-4">
+                    @if (!userInfo.PhoneNumberConfirmed)
+                    {
+                        <div class="alert text-danger"><span class="oi oi-warning"></span> Is not confirmed</div>
+                    }
+                    else
+                    {
+                        <div class="alert text-success"><span class="oi oi-circle-check"></span> Is confirmed</div>
+                    }
+                </div>
+            </div>
+
+            <div class="row mb-1">
+                <div class="col-12 col-md-4">
+                    <label class="alert"><span class="oi oi-envelope-closed border-end pe-3"></span> @userInfo.Email</label>
+                </div>
+                <div class="col-12 col-md-4">
+                    @if (!userInfo.EmailConfirmed)
+                    {
+                        <div class="alert text-danger"><span class="oi oi-warning"></span> Is not confirmed</div>
+                    }
+                    else
+                    {
+                        <div class="alert text-success"><span class="oi oi-circle-check"></span> Is confirmed</div>
+                    }
+                </div>
+            </div>
+
+
+        </div>
+        <div class="col-12 col-md-5 ms-2">
+            <div class="row">
+
+                    <div class="col-12 card shadow-profile border-bottom">
+                        <div class="row bg-primary">
+                            <h2 class="text-center px-3">Settings</h2>
+                        </div>
+                    </div>
+
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    Profile info
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-12 col-md-6 m-auto">
+            Loading ...
+        </div>
+    </div>
+}
+
+@code {
+    UserSession sessionInfo;
+    ApplicationUser userInfo;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var session = await _sessionStorage.GetAsync<UserSession>("UserSession");
+            sessionInfo = session.Value;
+            userInfo = await _userService.GetSingleUserAsync(sessionInfo.Id);
+            StateHasChanged();
+        }
+    }
+}

@@ -16,10 +16,10 @@
             </div>
         </div>
         <div class="row py-4 align-items-center">
-            <div class="col-9">
-                <input class="form-control" @bind-value="searchCondition" />
+            <div class="col-10">
+                <input class="form-control" @bind-value="searchCondition" placeholder="Type some search condition here ..." />
             </div>
-            <div class="col-3">
+            <div class="col-2">
                 <button class="btn btn-primary text-uppercase form-control" @onclick="(() => SearchHandler(searchCondition))"><span class="oi oi-magnifying-glass"></span></button>
             </div>
         </div>
@@ -45,8 +45,8 @@
                         @foreach (var item in filteredListForView)
                         {
                             <li>
-                                <h2>@item.Title.GetShortDescription(20, false)</h2>
-                                <p>@item.Body.GetShortDescription(50)</p>
+                                <h2>@item.Title.GetShortDescription(100, false)</h2>
+                                <p>@item.Body.GetShortDescription(200)</p>
                                 <div class="text-center">
                                     <small>Created: @item.CreationDate.ToShortDateString()</small><br />
                                     <div class="btn-group" role="group" aria-label="Basic outlined example">

@@ -7,7 +7,7 @@
             <button class="page-link @((@IsFirstPage()) ? "disabled" : "")" @onclick="MoveToPreviousPage">Previous</button>
         </li>
         <li class="page-item">
-            <span class="page-link text-black">Page @CurrentPage of @TotalPages</span>
+            <span class="page-link text-black" style="white-space: nowrap;">Page @CurrentPage of @TotalPages</span>
         </li>
         <li class="page-item">
             <button class="page-link @((@IsLastPage()) ? "disabled" : "")" @onclick="MoveToNextPage">Next</button>
