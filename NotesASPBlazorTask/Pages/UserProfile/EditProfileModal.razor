@@ -1,0 +1,82 @@
+﻿@using NotesASPBlazorTask.Data.Models;
+
+@if (isShow == true)
+{
+    <!-- Modal -->
+    <div class="modal fade show" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: block">
+        <EditForm Model="UserInfo" OnValidSubmit="EditUser">
+            <DataAnnotationsValidator />
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-success">
+                        <h1 class="modal-title fs-5 text-white" id="exampleModalLabel">Edit user info</h1>
+                        <button type="button" class="btn-close text-white" @onclick="(() => ShowClose())" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row align-items-center mb-3">
+                            <div class="col-sm-12 col-md-2">
+                                <label>First Name</label>
+                            </div>
+                            <div class="col-sm-12 col-md-10">
+                                <InputText class="form-control" @bind-Value="UserInfo.FirstName" placeholder="Enter a first name here..." />
+                                <ValidationMessage For="(()=> UserInfo.FirstName)" />
+                            </div>
+                        </div>
+                        <div class="row align-items-center mb-3">
+                            <div class="col-sm-12 col-md-2">
+                                <label>Last Name</label>
+                            </div>
+                            <div class="col-sm-12 col-md-10">
+                                <InputText class="form-control" @bind-Value="UserInfo.LastName" placeholder="Enter a last name here..." />
+                                <ValidationMessage For="(()=> UserInfo.LastName)" />
+                            </div>
+                        </div>
+                        <div class="row align-items-center mb-3">
+                            <div class="col-sm-12 col-md-2">
+                                <label>Phone</label>
+                            </div>
+                            <div class="col-sm-12 col-md-10">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text" id="basic-addon1">+358</span>
+                                    <InputText class="form-control" @bind-Value="UserInfo.PhoneNumber" placeholder="Enter a phone number here..." />
+                                    <ValidationMessage For="(()=> UserInfo.PhoneNumber)" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" @onclick="(() => ShowClose())" class="btn btn-danger" data-bs-dismiss="modal"><span class="oi oi-x"></span></button>
+                        <button type="submit" class="btn btn-success"><span class="oi oi-task"></span></button>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+}
+
+@code {
+    [Parameter] public ApplicationUser UserInfo { get; set; }
+
+    [Parameter] public EventCallback<ApplicationUser> OnEditUserInfo { get; set; }
+
+    bool? isShow = false;
+
+    public void ShowClose(bool? showAction = null)
+    {
+        if (showAction == null)
+            isShow = !isShow;
+        else if (showAction == true)
+            isShow = true;
+        else
+            isShow = false;
+
+        StateHasChanged();
+    }
+
+    private async Task EditUser()
+    {
+        ShowClose(false);
+        await OnEditUserInfo.InvokeAsync(UserInfo);
+
+    }
+}

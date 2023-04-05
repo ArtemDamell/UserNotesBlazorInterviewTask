@@ -4,29 +4,31 @@
 @using NotesASPBlazorTask.Data.Models.Autontication;
 @using NotesASPBlazorTask.Data.Services;
 @using NotesASPBlazorTask.Data.Services.Authentication;
+@using NotesASPBlazorTask.Data.Services.ToastService;
 
 @inject ProtectedSessionStorage _sessionStorage
 @inject IUserService _userService
+@inject IToastService _toast
 
 @if (sessionInfo != null)
 {
-    <div class="row border border-primary rounded mb-5">
+    <div class="row border border-primary rounded">
         <div class="col-12 col-md-6 m-auto">
             <h1 class="text-center text-primary">@sessionInfo.FirstName @sessionInfo.LastName profile</h1>
         </div>
     </div>
-    <div class="row">
+    <div class="row mb-5 mt-3">
         <div class="col-12 col-md-6 card shadow-profile border-bottom">
             <div class="row bg-info">
                 <h2 class="text-center px-3">Profile user info</h2>
             </div>
-
-            <div class="row mb-1">
+            <div class="row mb-1 mt-2">
                 <div class="col-12 col-md-6">
                     <label class="alert"><span class="oi oi-person border-end pe-3"></span> @userInfo.FirstName @userInfo.LastName</label>
                 </div>
             </div>
-            <div class="row mb-1">
+            <hr />
+            <div class="row mb-1 justify-content-between">
                 <div class="col-12 col-md-4">
                     <label class="alert"><span class="oi oi-phone border-end pe-3"></span> @userInfo.PhoneNumber</label>
                 </div>
@@ -41,8 +43,9 @@
                     }
                 </div>
             </div>
+            <hr />
 
-            <div class="row mb-1">
+            <div class="row mb-1 justify-content-between">
                 <div class="col-12 col-md-4">
                     <label class="alert"><span class="oi oi-envelope-closed border-end pe-3"></span> @userInfo.Email</label>
                 </div>
@@ -60,21 +63,27 @@
 
 
         </div>
-        <div class="col-12 col-md-5 ms-2">
+        <div class="col-12 mt-2 mb-4 col-md-4 mt-md-0 mb-md-0 offset-md-2 card shadow-profile border-bottom">
             <div class="row">
 
-                    <div class="col-12 card shadow-profile border-bottom">
-                        <div class="row bg-primary">
-                            <h2 class="text-center px-3">Settings</h2>
-                        </div>
+                <div class="col-12 card border-bottom">
+                    <div class="row bg-primary">
+                        <h2 class="text-center px-3">Settings</h2>
                     </div>
+                </div>
+
+                <div class="row mb-1 mt-2 mx-0">
+                    <button class="btn btn-outline-success form-control d-flex justify-content-between text-uppercase" @onclick="(() =>editModal.ShowClose())"><span class="oi oi-pencil"></span> Edit Profile</button>
+                    <EditProfileModal @ref="editModal" UserInfo="userInfo" OnEditUserInfo="EditUserInfo" />
+                    <Toast />
+                </div>
+
+                <div class="row mb-1 mt-2 mx-0">
+                    <button class="btn btn-outline-info form-control d-flex justify-content-between text-uppercase"><span class="oi oi-key"></span> Change Password</button>
+                </div>
 
             </div>
-            <div class="row">
-                <div class="col-12">
-                    Profile info
-                </div>
-            </div>
+           
         </div>
     </div>
 }
@@ -91,14 +100,29 @@ else
     UserSession sessionInfo;
     ApplicationUser userInfo;
 
+    EditProfileModal editModal;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             var session = await _sessionStorage.GetAsync<UserSession>("UserSession");
-            sessionInfo = session.Value;
-            userInfo = await _userService.GetSingleUserAsync(sessionInfo.Id);
-            StateHasChanged();
+            if (session.Success)
+            {
+                sessionInfo = session.Value;
+                userInfo = await _userService.GetSingleUserAsync(sessionInfo.Id);
+                StateHasChanged();
+            }
         }
+    }
+
+    private async Task EditUserInfo(ApplicationUser editedUser)
+    {
+        bool result = await _userService.UpdateUserAsync(editedUser);
+
+        if (result)
+            _toast.ShowToast("Success", "Profile editing success!", Data.Models.Toast.ToastMessageType.Success);
+        else
+            _toast.ShowToast("Failed", "Profile editing failed!", Data.Models.Toast.ToastMessageType.Error);
     }
 }

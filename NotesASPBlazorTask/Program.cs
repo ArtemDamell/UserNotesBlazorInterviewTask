@@ -6,6 +6,7 @@ using NotesASPBlazorTask.Data.Database;
 using NotesASPBlazorTask.Data.Models;
 using NotesASPBlazorTask.Data.Services;
 using NotesASPBlazorTask.Data.Services.Authentication;
+using NotesASPBlazorTask.Data.Services.ToastService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,7 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomeAuthStateProvider>();
 builder.Services.AddScoped<INoteService, NoteService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IToastService, ToastService>();
 
 
 var app = builder.Build();

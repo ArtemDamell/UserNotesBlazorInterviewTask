@@ -1,0 +1,49 @@
+﻿@inject IToastService _toastService
+
+@using NotesASPBlazorTask.Data.Models.Toast;
+@using NotesASPBlazorTask.Data.Services.ToastService;
+
+@if (_show)
+{
+    <div class="@_cssClass p-0">
+        <div class="new-toast-header bg-@_toastMessage.Type.ToString().ToLower()">
+            <strong class="mr-auto">@_toastMessage.Title</strong>
+            <button type="button" class="ml-2 mb-1 btn-close text-white" data-dismiss="toast" aria-label="Close" @onclick="HideToast"></button>
+        </div>
+        <div class="new-toast-body bg-light py-3">
+            @_toastMessage.Message
+        </div>
+    </div>
+}
+
+@code {
+    private ToastMessage _toastMessage;
+    private string _cssClass;
+    private bool _show;
+
+    protected override void OnInitialized()
+    {
+        _toastService.OnShow += OnShowToast;
+    }
+
+    private void OnShowToast(ToastMessage toastMessage)
+    {
+        _toastMessage = toastMessage;
+        _cssClass = $"new-toast toast-{_toastMessage.Type.ToString().ToLower()}";
+        _show = true;
+        StateHasChanged();
+
+        Timer timer = new Timer(HideToast, null, _toastMessage.Duration, Timeout.Infinite);
+    }
+
+    private void HideToast(object obj = null)
+    {
+        _show = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _toastService.OnShow -= OnShowToast;
+    }
+}
