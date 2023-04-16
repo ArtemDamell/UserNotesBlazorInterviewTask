@@ -231,7 +231,7 @@
         refPagination.HandleListUpdated(userNotes);
     }
 
-    void ShowPagedListHandler(IEnumerable<Note> filteredList) 
+    private void ShowPagedListHandler(IEnumerable<Note> filteredList) 
     {
         filteredListForView = filteredList;
         StateHasChanged();

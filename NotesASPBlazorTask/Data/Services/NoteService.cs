@@ -14,12 +14,22 @@ namespace NotesASPBlazorTask.Data.Services
             _sqlDbContext = sqlDbContext;
         }
 
+        /// <summary>
+        /// Retrieves all notes for a given user from the database.
+        /// </summary>
+        /// <param name="userId">The user ID to retrieve notes for.</param>
+        /// <returns>A list of notes for the given user.</returns>
         public async Task<List<Note>> GetAllNotesAsync(string userId)
         {
             var allUserNotes = await _sqlDbContext.Notes.Include(u => u.User).Where(x => x.UserId == userId).ToListAsync();
             return allUserNotes;
         }
 
+        /// <summary>
+        /// Creates a new note in the database.
+        /// </summary>
+        /// <param name="newNote">The note to be created.</param>
+        /// <returns>A message indicating the success or failure of the operation.</returns>
         public async Task<Message> CreateNoteAsync(Note newNote)
         {
             if (newNote is null)
@@ -35,11 +45,16 @@ namespace NotesASPBlazorTask.Data.Services
             }
             catch (Exception ex)
             {
-                return await Task.FromResult(new Message { State = MessageState.Failed, MessageText = ex.Message});
+                return await Task.FromResult(new Message { State = MessageState.Failed, MessageText = ex.Message });
             }
-            return await Task.FromResult(new Message { State = MessageState.Success, MessageText = $"Note '{newNote.Title}' has been created"});
+            return await Task.FromResult(new Message { State = MessageState.Success, MessageText = $"Note '{newNote.Title}' has been created" });
         }
 
+        /// <summary>
+        /// Updates a note in the database
+        /// </summary>
+        /// <param name="editedNote">The note to be updated</param>
+        /// <returns>A message indicating the success or failure of the update</returns>
         public async Task<Message> UpdateNoteAsync(Note editedNote)
         {
             if (editedNote is null)
@@ -50,8 +65,8 @@ namespace NotesASPBlazorTask.Data.Services
 
             try
             {
-               _sqlDbContext.Notes.Update(editedNote);
-               await _sqlDbContext.SaveChangesAsync(true);
+                _sqlDbContext.Notes.Update(editedNote);
+                await _sqlDbContext.SaveChangesAsync(true);
             }
             catch (Exception ex)
             {
@@ -60,6 +75,11 @@ namespace NotesASPBlazorTask.Data.Services
             return await Task.FromResult(new Message { State = MessageState.Success, MessageText = $"Note '{editedNote.Title}' has been updated" });
         }
 
+        /// <summary>
+        /// Asynchronously deletes a note from the database.
+        /// </summary>
+        /// <param name="deletingNote">The note to be deleted.</param>
+        /// <returns>A message indicating the success or failure of the operation.</returns>
         public async Task<Message> DeleteNoteAsync(Note deletingNote)
         {
             if (deletingNote is null)
@@ -80,6 +100,12 @@ namespace NotesASPBlazorTask.Data.Services
             return await Task.FromResult(new Message { State = MessageState.Success, MessageText = $"Note '{deletingNote.Title}' has been deleted" });
         }
 
+        /// <summary>
+        /// Gets a list of notes based on a given condition and userId.
+        /// </summary>
+        /// <param name="noteCondition">The condition to filter the notes by.</param>
+        /// <param name="userId">The userId to filter the notes by.</param>
+        /// <returns>A list of notes that match the given condition and userId.</returns>
         public async Task<IEnumerable<Note>> GetNotesByCondition(string noteCondition, string userId)
         {
             var userNotieces = await _sqlDbContext.Notes.Where(n => n.UserId == userId).ToListAsync();
@@ -87,6 +113,10 @@ namespace NotesASPBlazorTask.Data.Services
             return filteredNotieces;
         }
 
+        /// <summary>
+        /// Gets a list of demo notes.
+        /// </summary>
+        /// <returns>A list of demo notes.</returns>
         public IEnumerable<Note> GetDemoNotieces()
         {
             return new List<Note>

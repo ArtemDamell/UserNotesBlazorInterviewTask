@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Microsoft.VisualBasic;
 using NotesASPBlazorTask.Data.Models.Autontication;
 using System.Security.Claims;
 
@@ -16,6 +15,12 @@ namespace NotesASPBlazorTask.Data.Services
             _sessionStorage = storage;
         }
 
+        /// <summary>
+        /// Gets the authentication state of the user.
+        /// </summary>
+        /// <returns>
+        /// The authentication state of the user.
+        /// </returns>
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             try
@@ -41,6 +46,13 @@ namespace NotesASPBlazorTask.Data.Services
             }
         }
 
+        /// <summary>
+        /// Updates the authentication state of the application.
+        /// </summary>
+        /// <param name="userSession">The user session.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation.
+        /// </returns>
         public async Task UpdateAuthState(UserSession userSession)
         {
             ClaimsPrincipal claimsPrincipal;
@@ -65,6 +77,12 @@ namespace NotesASPBlazorTask.Data.Services
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
         }
 
+        /// <summary>
+        /// Logs out the current user by deleting the user session and notifying the authentication state changed.
+        /// </summary>
+        /// <returns>
+        /// A task that represents the asynchronous operation.
+        /// </returns>
         public async Task LogOut()
         {
             await _sessionStorage.DeleteAsync("UserSession");
